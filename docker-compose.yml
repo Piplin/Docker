@@ -26,7 +26,6 @@ services:
     volumes:
       - ./web/supervisor/piplin.conf:/etc/supervisor/conf.d/piplin.conf
       - ./web/nginx/piplin.template:/etc/nginx/conf.d/default.conf
-      - ./web/env:/var/www/piplin/.env
       - piplin-storage:/var/www/piplin/storage
     ports:
       - 80:8001

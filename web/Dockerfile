@@ -2,9 +2,6 @@ FROM centos:6.9
 
 MAINTAINER Sheaven <sheaven@qq.com>, Guan Shiliang <guan.shiliang@gmail.com>
 
-EXPOSE 8001
-EXPOSE 7001
-CMD ["/sbin/entrypoint.sh"]
 ARG piplin_ver
 ENV piplin_ver ${piplin_ver:-1.0}
 
@@ -34,7 +31,7 @@ RUN set -xe; \
 
 # 安装环境
 RUN set -xe; \
-    yum install -y git2u php71u-fpm-nginx php71u-cli php71u-pecl-redis php71u-mysqlnd php71u-json php71u-gd php71u-mbstring php71u-mcrypt php71u-opcache nodejs python27-pip crontabs wget mysql
+    yum install -y git2u php71u-fpm-nginx php71u-cli php71u-pecl-redis php71u-mysqlnd php71u-json php71u-gd php71u-mbstring php71u-mcrypt php71u-opcache nodejs python27-pip crontabs mysql
 
 # 清理 yum 缓存
 RUN set -xe; \
@@ -46,12 +43,12 @@ RUN set -xe; \
     && php composer-setup.php \
     && rm -f composer-setup.php \
     && mv composer.phar /usr/local/bin/composer \
-    && composer config -g repo.packagist composer https://packagist.phpcomposer.com \
-    && composer self-update
+    && composer config -g repo.packagist composer https://packagist.phpcomposer.com
 
 # 复制项目代码
-RUN wget https://github.com/Piplin/Piplin/archive/${piplin_ver}.tar.gz && \
-    tar xzvf ${piplin_ver}.tar.gz --strip-components=1 && \
+RUN set -xe; \
+    curl -o ${piplin_ver}.tar.gz -fSL "https://github.com/Piplin/Piplin/archive/${piplin_ver}.tar.gz"; \
+    tar xzvf ${piplin_ver}.tar.gz --strip-components=1; \
     rm -r ${piplin_ver}.tar.gz
 
 # 安装项目依赖
@@ -69,6 +66,11 @@ RUN set -xe; \
     && mkdir -p /var/log/supervisor
 
 COPY supervisor/supervisord.conf /etc/supervisor/
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
 COPY crontab /var/spool/cron/root
 COPY .env.docker /var/www/piplin/.env
 COPY entrypoint.sh /sbin/entrypoint.sh
+
+EXPOSE 8001 7001
+
+CMD ["/sbin/entrypoint.sh"]

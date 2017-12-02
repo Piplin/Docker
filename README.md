@@ -31,10 +31,10 @@ http://127.0.0.1 or http://piplin.app
 
 > 如果你要使用piplin.app访问，请预先在本机hosts配 127.0.0.1 piplin.app
 
-可通过修改下面2个文件中的相关配置进行域名变更（建议在初始化之前修改）
+可通过修改下面2个文件中的相关配置进行域名变更（需要在构建之前修改）
 ```
 web/nginx/piplin.template
-env
+web/.env.docker
 ```
 
 ## 维护
