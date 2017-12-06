@@ -3,7 +3,7 @@ upstream websocket {
 }
 
 server {
-    listen 8001;
+    listen 80;
     server_name piplin.app;
     root "/var/www/piplin/public";
 
@@ -14,9 +14,6 @@ server {
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
-
-    access_log off;
-    error_log  /dev/stderr error;
 
     sendfile off;
 
