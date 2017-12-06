@@ -1,4 +1,4 @@
-# Piplin - Docker
+# Piplin - Docker lite
 ## 系统要求
 Docker Engine release 17.04.0+
 
@@ -12,14 +12,13 @@ $ git clone https://github.com/Piplin/Docker.git piplin-docker
 
 ```
 $ cd piplin-docker
-$ docker-compose -p piplin build
+$ docker build -t piplin:lite .
 ```
 
 ## 运行
 
 ```
-$ docker-compose -p piplin up -d
-
+$ docker run -d -p 80:80 --name piplin piplin:lite
 ```
 
 ## 访问
@@ -31,32 +30,32 @@ http://127.0.0.1 or http://piplin.app
 
 > 如果你要使用piplin.app访问，请预先在本机hosts配 127.0.0.1 piplin.app
 
-可通过修改下面2个文件中的相关配置进行域名变更（需要在构建之前修改）
+可通过修改下面2个文件中的相关配置进行域名变更（修改后需要重新构建）
 ```
-web/nginx/piplin.template
-web/.env.docker
+nginx/piplin.template
+.env.docker
 ```
 
 ## 维护
 停止容器
 
-`docker-compose -p piplin stop`
+`docker stop piplin`
 
 启动容器
 
-`docker-compose -p piplin start`
+`docker start piplin`
 
 查看容器日志
 
-`docker-compose -p piplin logs`
+`docker logs piplin`
 
 进入 web 容器
 
-`docker-compose -p piplin exec web bash`
+`docker exec -it piplin ash`
 
 ## 清理
 >!!!注意以下操作会清理全部 Piplin Docker 数据，一般用于重新部署时用!!!
 ```
-docker-compose -p piplin down --volumes
-docker rmi -f piplin_web
+docker rm -f piplin
+docker rmi piplin:lite
 ```

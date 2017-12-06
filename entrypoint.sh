@@ -8,7 +8,7 @@ initialize_system() {
 
     APP_ENV=${APP_ENV:-development}
     APP_DEBUG=${APP_DEBUG:-true}
-    DB_CONNECTION=${DB_CONNECTION:-mysql}
+    DB_CONNECTION=${DB_CONNECTION:-sqlite}
     DB_HOST=${DB_HOST:-piplin-mysql}
     DB_DATABASE=${DB_DATABASE:-piplin}
     DB_PREFIX=${DB_PREFIX}
@@ -53,6 +53,9 @@ check_config() {
         mysql)
             checkdbinitmysql
             ;;
+        sqlite)
+            checkdbinitsqlite
+            ;;
     esac
 }
 
@@ -69,10 +72,24 @@ checkdbinitmysql() {
 
 }
 
+checkdbinitsqlite() {
+    if [ -f database/database.sqlite ]; then 
+        echo "database/database.sqlite exists! ..."
+    else
+        echo "database/database.sqlite does not exist! ..."
+        touch database/database.sqlite
+        chmod 666 database/database.sqlite
+        chmod 777 database
+        init_db
+    fi
+}
+
 init_db() {
     echo "Initializing Piplin database ..."
+    redis-server &
     php artisan migrate
     php artisan db:seed
+    redis-cli shutdown
     check_config
 }
 
