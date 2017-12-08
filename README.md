@@ -51,7 +51,7 @@ nginx/piplin.template
 
 进入 web 容器
 
-`docker exec -it piplin ash`
+`docker exec -it piplin bash`
 
 ## 清理
 >!!!注意以下操作会清理全部 Piplin Docker 数据，一般用于重新部署时用!!!
