@@ -1,10 +1,10 @@
 FROM php:7.1-fpm-alpine
 
-LABEL version="1.0"
+LABEL version="1.0.2"
 LABEL maintainer="Sheaven <sheaven@qq.com>, Guan Shiliang <guan.shiliang@gmail.com>"
 
 ARG piplin_ver
-ENV piplin_ver ${piplin_ver:-1.0}
+ENV piplin_ver ${piplin_ver:-1.0.2}
 
 RUN mkdir -p /var/www/piplin
 WORKDIR /var/www/piplin
