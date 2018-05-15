@@ -18,7 +18,7 @@ RUN set -xe \
         libjpeg-turbo-dev \
         libpng-dev \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install gd zip
+    && docker-php-ext-install gd zip pdo_mysql
 
 # 复制项目代码
 RUN set -xe; \
@@ -36,7 +36,7 @@ RUN set -xe \
 
 # 安装项目依赖
 RUN set -xe \
-    && apk add --no-cache nginx redis nodejs supervisor git bash openssh-client rsync \
+    && apk add --no-cache nginx redis nodejs supervisor git bash openssh-client mariadb-client rsync \
     && npm config set registry http://registry.npm.taobao.org/ \
     && composer install -o \
     && npm install --production \
