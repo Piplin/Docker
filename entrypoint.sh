@@ -9,6 +9,7 @@ initialize_system() {
     # get global env data
     APP_ENV=${APP_ENV:-development}
     APP_DEBUG=${APP_DEBUG:-true}
+    APP_URL=${APP_URL:-http://localhost}
 
     DB_CONNECTION=${DB_CONNECTION:-sqlite}
     DB_HOST=${DB_HOST:-piplin-mysql}
@@ -24,6 +25,7 @@ initialize_system() {
     # configure env file
     sed 's,{{APP_ENV}},'"${APP_ENV}"',g' -i /var/www/piplin/.env
     sed 's,{{APP_DEBUG}},'"${APP_DEBUG}"',g' -i /var/www/piplin/.env
+    sed 's,{{APP_URL}},'"${APP_URL}"',g' -i /var/www/piplin/.env
 
     sed 's,{{DB_CONNECTION}},'"${DB_CONNECTION}"',g' -i /var/www/piplin/.env
     sed 's,{{DB_HOST}},'"${DB_HOST}"',g' -i /var/www/piplin/.env
