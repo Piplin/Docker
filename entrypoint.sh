@@ -22,6 +22,11 @@ initialize_system() {
         DB_PORT=${DB_PORT:-3306}
     fi
 
+    REDIS_HOST=${REDIS_HOST:-127.0.0.1}
+    REDIS_PASSWORD=${REDIS_PASSWORD:-null}
+    REDIS_PORT=${REDIS_PORT:-6379}
+    REDIS_DATABASE=${REDIS_DATABASE:-0}
+
     # configure env file
     sed 's,{{APP_ENV}},'"${APP_ENV}"',g' -i /var/www/piplin/.env
     sed 's,{{APP_DEBUG}},'"${APP_DEBUG}"',g' -i /var/www/piplin/.env
@@ -38,6 +43,16 @@ initialize_system() {
         sed 's,#DB_DATABASE,DB_DATABASE,g' -i /var/www/piplin/.env
         sed 's,#DB_PORT,DB_PORT,g' -i /var/www/piplin/.env
         sed 's,#DB_PREFIX,DB_PREFIX,g' -i /var/www/piplin/.env
+    fi
+
+    sed 's,{{REDIS_HOST}},'"${REDIS_HOST}"',g' -i /var/www/piplin/.env
+    sed 's,{{REDIS_PASSWORD}},'"${REDIS_PASSWORD}"',g' -i /var/www/piplin/.env
+    sed 's,{{REDIS_PORT}},'"${REDIS_PORT}"',g' -i /var/www/piplin/.env
+    sed 's,{{REDIS_DATABASE}},'"${REDIS_DATABASE}"',g' -i /var/www/piplin/.env
+
+    # check redis config
+    if ! $(check_redis); then
+        rm -rf /etc/supervisor/conf.d/redis.conf
     fi
 }
 
@@ -61,6 +76,12 @@ check_database() {
     sleep 1
   done
   echo
+}
+
+check_redis() {
+    REDIS_HOST=${REDIS_HOST:-127.0.0.1}
+    local_host=$([[ "${REDIS_HOST}" = "127.0.0.1" || "${REDIS_HOST}" = "localhost" ]])
+    return $local_host
 }
 
 check_config() {
@@ -101,14 +122,21 @@ checkdbinitsqlite() {
 
 init_db() {
     echo "Initializing Piplin database ..."
-    redis-server &
-    php artisan migrate
-    php artisan db:seed
-    redis-cli shutdown
+    if $(check_redis); then
+        # temporarily start redis server for database migration
+        redis-server &
+        migrate_db
+        redis-cli shutdown
+    else
+        migrate_db
+    fi
     check_config
 }
 
-
+migrate_db() {
+    php artisan migrate
+    php artisan db:seed
+}
 
 start_system() {
     initialize_system

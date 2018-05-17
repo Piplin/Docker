@@ -46,7 +46,7 @@ RUN set -xe \
     && mkdir -p /etc/supervisor/conf.d \
     && echo '* * * * * /usr/bin/php /var/www/piplin/artisan schedule:run >> /dev/null 2>&1' > /etc/crontabs/root
 COPY supervisor/supervisord.conf /etc/supervisor/supervisord.conf
-COPY supervisor/piplin.conf /etc/supervisor/conf.d/piplin.conf
+COPY supervisor/conf.d/* /etc/supervisor/conf.d/
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
 COPY nginx/piplin.template /etc/nginx/conf.d/default.conf
 COPY .env.docker /var/www/piplin/.env
