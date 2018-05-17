@@ -50,6 +50,7 @@ COPY supervisor/conf.d/* /etc/supervisor/conf.d/
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
 COPY nginx/piplin.template /etc/nginx/conf.d/default.conf
 COPY .env.docker /var/www/piplin/.env
+COPY enable_https.php /usr/local/bin/enable_https.php
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 80

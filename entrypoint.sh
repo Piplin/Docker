@@ -50,6 +50,12 @@ initialize_system() {
     sed 's,{{REDIS_PORT}},'"${REDIS_PORT}"',g' -i /var/www/piplin/.env
     sed 's,{{REDIS_DATABASE}},'"${REDIS_DATABASE}"',g' -i /var/www/piplin/.env
 
+    # check and set https
+    if [[ "$(echo ${APP_URL%:*}|tr '[:upper:]' '[:lower:]')" = "https" ]]; then
+        # edit app/Providers/AppServiceProvider.php && socket.js
+        /usr/local/bin/enable_https.php
+    fi
+
     # check redis config
     if ! $(check_redis); then
         rm -rf /etc/supervisor/conf.d/redis.conf
