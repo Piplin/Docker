@@ -4,7 +4,7 @@ upstream websocket {
 
 server {
     listen 80;
-    server_name piplin.app;
+    server_name _;
     root "/var/www/piplin/public";
 
     index index.php;

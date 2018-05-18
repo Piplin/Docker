@@ -18,7 +18,7 @@ RUN set -xe \
         libjpeg-turbo-dev \
         libpng-dev \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install gd zip
+    && docker-php-ext-install gd zip pdo_mysql
 
 # 复制项目代码
 RUN set -xe; \
@@ -36,7 +36,7 @@ RUN set -xe \
 
 # 安装项目依赖
 RUN set -xe \
-    && apk add --no-cache nginx redis nodejs supervisor git bash openssh-client rsync \
+    && apk add --no-cache nginx redis nodejs supervisor git bash openssh-client mariadb-client rsync \
     && npm config set registry http://registry.npm.taobao.org/ \
     && composer install -o \
     && npm install --production \
@@ -46,10 +46,11 @@ RUN set -xe \
     && mkdir -p /etc/supervisor/conf.d \
     && echo '* * * * * /usr/bin/php /var/www/piplin/artisan schedule:run >> /dev/null 2>&1' > /etc/crontabs/root
 COPY supervisor/supervisord.conf /etc/supervisor/supervisord.conf
-COPY supervisor/piplin.conf /etc/supervisor/conf.d/piplin.conf
+COPY supervisor/conf.d/* /etc/supervisor/conf.d/
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
 COPY nginx/piplin.template /etc/nginx/conf.d/default.conf
 COPY .env.docker /var/www/piplin/.env
+COPY enable_https.php /usr/local/bin/enable_https.php
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
 EXPOSE 80

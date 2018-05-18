@@ -6,24 +6,60 @@ set -eo pipefail
 initialize_system() {
     echo "Initializing Piplin container ..."
 
+    # get global env data
     APP_ENV=${APP_ENV:-development}
     APP_DEBUG=${APP_DEBUG:-true}
+    APP_URL=${APP_URL:-http://localhost}
+
     DB_CONNECTION=${DB_CONNECTION:-sqlite}
     DB_HOST=${DB_HOST:-piplin-mysql}
     DB_DATABASE=${DB_DATABASE:-piplin}
+    DB_PORT=${DB_PORT}
     DB_PREFIX=${DB_PREFIX}
     DB_USERNAME=${DB_USERNAME:-piplin}
     DB_PASSWORD=${DB_PASSWORD:-piplinpassword}
-
     if [[ "${DB_CONNECTION}" = "mysql" ]]; then
         DB_PORT=${DB_PORT:-3306}
     fi
 
-    DB_PORT=${DB_PORT}
+    REDIS_HOST=${REDIS_HOST:-127.0.0.1}
+    REDIS_PASSWORD=${REDIS_PASSWORD:-null}
+    REDIS_PORT=${REDIS_PORT:-6379}
+    REDIS_DATABASE=${REDIS_DATABASE:-0}
 
     # configure env file
     sed 's,{{APP_ENV}},'"${APP_ENV}"',g' -i /var/www/piplin/.env
     sed 's,{{APP_DEBUG}},'"${APP_DEBUG}"',g' -i /var/www/piplin/.env
+    sed 's,{{APP_URL}},'"${APP_URL}"',g' -i /var/www/piplin/.env
+
+    sed 's,{{DB_CONNECTION}},'"${DB_CONNECTION}"',g' -i /var/www/piplin/.env
+    sed 's,{{DB_HOST}},'"${DB_HOST}"',g' -i /var/www/piplin/.env
+    sed 's,{{DB_DATABASE}},'"${DB_DATABASE}"',g' -i /var/www/piplin/.env
+    sed 's,{{DB_PORT}},'"${DB_PORT}"',g' -i /var/www/piplin/.env
+    sed 's,{{DB_PREFIX}},'"${DB_PREFIX}"',g' -i /var/www/piplin/.env
+    sed 's,{{DB_USERNAME}},'"${DB_USERNAME}"',g' -i /var/www/piplin/.env
+    sed 's,{{DB_PASSWORD}},'"${DB_PASSWORD}"',g' -i /var/www/piplin/.env
+    if [[ "${DB_CONNECTION}" = "mysql" ]]; then
+        sed 's,#DB_DATABASE,DB_DATABASE,g' -i /var/www/piplin/.env
+        sed 's,#DB_PORT,DB_PORT,g' -i /var/www/piplin/.env
+        sed 's,#DB_PREFIX,DB_PREFIX,g' -i /var/www/piplin/.env
+    fi
+
+    sed 's,{{REDIS_HOST}},'"${REDIS_HOST}"',g' -i /var/www/piplin/.env
+    sed 's,{{REDIS_PASSWORD}},'"${REDIS_PASSWORD}"',g' -i /var/www/piplin/.env
+    sed 's,{{REDIS_PORT}},'"${REDIS_PORT}"',g' -i /var/www/piplin/.env
+    sed 's,{{REDIS_DATABASE}},'"${REDIS_DATABASE}"',g' -i /var/www/piplin/.env
+
+    # check and set https
+    if [[ "$(echo ${APP_URL%:*}|tr '[:upper:]' '[:lower:]')" = "https" ]]; then
+        # edit app/Providers/AppServiceProvider.php && socket.js
+        /usr/local/bin/enable_https.php
+    fi
+
+    # check redis config
+    if ! $(check_redis); then
+        rm -rf /etc/supervisor/conf.d/redis.conf
+    fi
 }
 
 check_database() {
@@ -46,6 +82,12 @@ check_database() {
     sleep 1
   done
   echo
+}
+
+check_redis() {
+    REDIS_HOST=${REDIS_HOST:-127.0.0.1}
+    local_host=$([[ "${REDIS_HOST}" = "127.0.0.1" || "${REDIS_HOST}" = "localhost" ]])
+    return $local_host
 }
 
 check_config() {
@@ -86,14 +128,21 @@ checkdbinitsqlite() {
 
 init_db() {
     echo "Initializing Piplin database ..."
-    redis-server &
-    php artisan migrate
-    php artisan db:seed
-    redis-cli shutdown
+    if $(check_redis); then
+        # temporarily start redis server for database migration
+        redis-server &
+        migrate_db
+        redis-cli shutdown
+    else
+        migrate_db
+    fi
     check_config
 }
 
-
+migrate_db() {
+    php artisan migrate
+    php artisan db:seed
+}
 
 start_system() {
     initialize_system
