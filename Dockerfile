@@ -1,6 +1,6 @@
 FROM php:7.1-fpm-alpine
 
-LABEL version="1.0"
+LABEL version="v1.0.2"
 LABEL maintainer="Sheaven <sheaven@qq.com>, Guan Shiliang <guan.shiliang@gmail.com>"
 
 ARG piplin_ver
@@ -24,7 +24,7 @@ RUN set -xe \
 RUN set -xe; \
     curl -o ${piplin_ver}.tar.gz -fSL "https://github.com/Piplin/Piplin/archive/${piplin_ver}.tar.gz"; \
     tar xzvf ${piplin_ver}.tar.gz --strip-components=1; \
-    rm -r ${piplin_ver}.tar.gz
+    rm -r ${piplin_ver}.tar.gz composer.lock
 
 # 安装 composer
 RUN set -xe \
@@ -36,7 +36,7 @@ RUN set -xe \
 
 # 安装项目依赖
 RUN set -xe \
-    && apk add --no-cache nginx redis nodejs supervisor git bash openssh-client rsync \
+    && apk add --no-cache nginx redis nodejs nodejs-npm supervisor git bash openssh-client rsync \
     && npm config set registry http://registry.npm.taobao.org/ \
     && composer install -o \
     && npm install --production \
