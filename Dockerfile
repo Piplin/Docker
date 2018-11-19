@@ -3,8 +3,7 @@ FROM php:7.1-fpm-alpine
 LABEL version="v1.0.2"
 LABEL maintainer="Sheaven <sheaven@qq.com>, Guan Shiliang <guan.shiliang@gmail.com>"
 
-ARG piplin_ver
-ENV piplin_ver ${piplin_ver:-1.0}
+ARG piplin_ver=v1.0.2
 
 RUN mkdir -p /var/www/piplin
 WORKDIR /var/www/piplin
@@ -52,6 +51,7 @@ COPY nginx/piplin.template /etc/nginx/conf.d/default.conf
 COPY .env.docker /var/www/piplin/.env
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
+VOLUME /var/www/piplin
 EXPOSE 80
 
 CMD ["/usr/local/bin/entrypoint.sh"]
